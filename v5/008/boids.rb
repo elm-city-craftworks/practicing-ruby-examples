@@ -83,7 +83,7 @@ Ray.game "Hello world!", :size => [1000,1000] do
 
     always do 
       boids.each do |b| 
-        b.velocity += rule1.(b) + rule2.(b)*10 + rule3.(b) #+ rule4.(b)
+        b.velocity += rule1.(b) + rule2.(b)*10 + rule3.(b) + rule4.(b)
         b.pos      += b.velocity
       end
 

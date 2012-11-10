@@ -13,7 +13,7 @@ class Cell
   end
 
   def add_pheremone
-    @pheremone += 50
+    @pheremone += 10
 
     gray = [255 - @pheremone, 0].max
     
@@ -21,7 +21,7 @@ class Cell
   end
 
   def reduce_pheremone
-    @pheremone -= 5
+    @pheremone = [@pheremone - 0.2, 0].max
 
     gray = [255 - @pheremone, 0].max
     
@@ -30,6 +30,9 @@ class Cell
 
   attr_reader :shape, :pheremone, :coords
 end
+
+
+Ant = Struct.new(:position, :carrying_food, :path)
 
 class Grid
   def initialize(size)
@@ -66,13 +69,13 @@ class Grid
     nearby_values = neighbors(x,y).reduce(0) { |s,c| s + c.pheremone }
     randomizer    = rand(nearby_values)
 
-    if nearby_values.zero? || rand < 0.1
+    if nearby_values.zero? || rand < 0.5
       neighbors(x,y).sample
     else
       limit = 0
 
       neighbors(x,y).each do |n|
-        if (limit .. limit + n.pheremone).include?(randomizer)
+        if (limit .. limit + n.pheremone + 1).include?(randomizer)
           return n
         else
           limit += n.pheremone
@@ -95,36 +98,56 @@ end
 Ray.game "Hello world!", :size => [1000,1000] do
   register { add_hook :quit, method(:exit!) }
 
-    table = Grid.new(50)
+    table = Grid.new(20)
 
     scene :square do
-      coords = 5.times.map { table.sample.coords }
-      tick   = 0
+      nest         = table.sample
+      food_source  = table.sample
+
+      ants = 5.times.map { Ant.new(nest.coords, false, []) }
+      tick = 0
 
       always do
-        coords = coords.map do |c|
-          if tick < 1000
-            next_cell = table.neighbors(*c).sample
-            next_cell.add_pheremone
+        ants.each do |ant|
 
-            next_cell.coords
-          else
-            next_cell = table.best_path(*c)
-            next_cell.add_pheremone
-
-            next_cell.coords
+          case ant.position
+          when nest.coords
+            ant.carrying_food = false
+          when food_source.coords
+            ant.carrying_food = true
           end
+
+          table[*ant.position].add_pheremone
+          
+          if ant.carrying_food
+            next_cell = table.best_path(*ant.position)
+          else
+            next_cell = table.neighbors(*ant.position).sample
+          end
+
+          ant.position = next_cell.coords
         end
 
-        if tick % 10 == 0
+
+        if tick % 2 == 0
           table.each { |cell| cell.reduce_pheremone }
         end
 
         tick += 1
+
+        nest.shape.color         = Ray::Color.red
+        food_source.shape.color  = Ray::Color.blue
       end
 
       render do |win|
         table.draw(win)
+
+        ants.each do |ant|
+          circle = Ray::Polygon.circle([-10, -10], 5, Ray::Color.black)
+          circle.pos = Ray::Vector2[*ant.position]*20
+
+          win.draw(circle)
+        end
       end
     end
 
