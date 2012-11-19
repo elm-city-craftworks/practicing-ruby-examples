@@ -1,3 +1,9 @@
+RubyVM::InstructionSequence.compile_option = {
+  :tailcall_optimization => true,
+  :trace_instruction => false
+}
+
+
 class Cell
   def initialize(food, pheremone)
     @food, @pheremone = food, pheremone
@@ -38,11 +44,14 @@ class Simulator
   DIR_DELTA   = [ [0, -1], [ 1, -1], [ 1, 0], [ 1,  1],
                   [0,  1], [-1,  1], [-1, 0], [-1, -1] ]
 
-  EVAP_RATE   = 0.99
+  EVAP_RATE    = 0.99
+  ANT_SLEEP    = 0.04
 
   def initialize
+    @semaphore      = Mutex.new
     @world          = World.new(80)
     @ant_locations  = {}
+    @running        = true
 
     FOOD_PLACES.times do
       @world[[rand(DIMENSIONS), rand(DIMENSIONS)]].food = rand(FOOD_RANGE)
@@ -58,7 +67,7 @@ class Simulator
     end
   end
 
-  attr_reader :world
+  attr_reader :world, :ant_locations
   
   def wrand(slices)
     total = slices.reduce(:+)
@@ -143,11 +152,73 @@ class Simulator
     end
   end
 
+  def behave(loc)
+    # FIXME: Make async
+    #
+    loop do
+      cell  = @world[loc]
+      ant   = cell.ant
+
+      ahead       = @world[delta_loc(loc, ant.direction)]
+      ahead_left  = @world[delta_loc(loc, ant.direction - 1)]
+      ahead_right = @world[delta_loc(loc, ant.direction + 1)] 
+
+      places = [ahead, ahead_left, ahead_right]
+
+      if ant.food
+        case
+        when cell.home
+          drop_food(loc)
+          turn(loc, 4)
+        when ahead.home && (! ahead.ant)
+          move(loc)
+        else
+          home_ranking = rank_by(places) { |cell| cell.home ? 1 : 0 }
+          pher_ranking = rank_by(places) { |cell| cell.pheremone }
+
+          ranks = home_ranking.merge(pher_ranking) do |k,v| 
+            home_ranking[k] + pher_ranking[k]
+          end
+
+          [->(loc) { move(loc) }, 
+           ->(loc) { turn(loc, -1) },
+           ->(loc) { turn(loc,  1) }][wrand([ ahead.ant ? 0 : ranks[ahead],
+                                              ranks[ahead_left],
+                                              ranks[ahead_right]])].(loc)                                       
+        end
+      else
+        case
+        when cell.food > 0 && (! cell.home)
+          take_food(loc)
+          turn(loc, 4)
+        when ahead.food > 0 && (! ahead.home ) && (! ahead.ant )
+          move(loc)
+        else
+          food_ranking = rank_by(places) { |cell| cell.food }
+          pher_ranking = rank_by(places) { |cell| cell.pheremone }
+
+            ranks = food_ranking.merge(pher_ranking) do |k,v| 
+            food_ranking[k] + pher_ranking[k]
+          end
+
+
+          spin = wrand([ ahead.ant ? 0 : ranks[ahead],
+                         ranks[ahead_left],
+                         ranks[ahead_right]])
+
+          [->(loc) { move(loc) }, 
+           ->(loc) { turn(loc, -1) },
+           ->(loc) { turn(loc,  1) }][spin].(loc)     
+        end
+      end
+
+      loc = @ant_locations[ant]
+    end
+  end
+
 end
 
 sim = Simulator.new
+sim.behave([20,20])
 
-p sim.world[[20,20]]
-p sim.move([20,20])
-
-p sim.evaporate
+sleep
