@@ -1,9 +1,3 @@
-RubyVM::InstructionSequence.compile_option = {
-  :tailcall_optimization => true,
-  :trace_instruction => false
-}
-
-
 class Cell
   def initialize(food, pheremone)
     @food, @pheremone = food, pheremone
@@ -145,7 +139,7 @@ class Simulator
   end
 
   def rank_by(xs, &keyfn)
-    sorted = xs.sort_by { |e| keyfn.(e).to_f }
+    sorted = xs.sort_by { |e| keyfn.call(e).to_f }
 
     (0...sorted.length).each_with_object(Hash.new { |h,k| h[k] = 0 }) do |i,r|
       r[sorted[i]] = i + 1
@@ -180,11 +174,11 @@ class Simulator
             home_ranking[k] + pher_ranking[k]
           end
 
-          [->(loc) { move(loc) }, 
-           ->(loc) { turn(loc, -1) },
-           ->(loc) { turn(loc,  1) }][wrand([ ahead.ant ? 0 : ranks[ahead],
+          [lambda { |loc| move(loc) }, 
+           lambda { |loc| turn(loc, -1) },
+           lambda { |loc| turn(loc,  1) }][wrand([ ahead.ant ? 0 : ranks[ahead],
                                               ranks[ahead_left],
-                                              ranks[ahead_right]])].(loc)                                       
+                                              ranks[ahead_right]])].call(loc)                                       
         end
       else
         case
@@ -206,9 +200,9 @@ class Simulator
                          ranks[ahead_left],
                          ranks[ahead_right]])
 
-          [->(loc) { move(loc) }, 
-           ->(loc) { turn(loc, -1) },
-           ->(loc) { turn(loc,  1) }][spin].(loc)     
+          [lambda { |loc| move(loc) }, 
+           lambda { |loc| turn(loc, -1) },
+           lambda { |loc| turn(loc,  1) }][spin].call(loc)     
         end
       end
 
@@ -218,7 +212,24 @@ class Simulator
 
 end
 
-sim = Simulator.new
-sim.behave([20,20])
+include Java
 
-sleep
+import java.awt.Color
+import java.awt.Graphics
+import java.awt.Dimension
+
+import java.awt.image.BufferedImage
+import javax.swing.JPanel
+import javax.swing.JFrame
+
+
+panel = Class.new(JPanel) { def paint(g);  end }.new
+panel.setPreferredSize(Dimension.new(800,800))
+
+
+
+frame = JFrame.new
+frame.add(panel)
+frame.pack
+frame.show
+
