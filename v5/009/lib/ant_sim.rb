@@ -1,241 +1,298 @@
+#srand(54321)
+
 module AntSim
-  class World
-    def initialize(size)
-      @size = size
-      @data = size.times.map { size.times.map { Cell.new(0,0) } }
-    end
-
-    def [](location)
-      x,y = location
-
-      @data[x][y]
-    end
-
-    def sample
-      @data[rand(@size)][rand(@size)]
-    end
-
-    def each
-      @data.each { |col| col.each { |cell| yield cell } }
-    end
-
-    def each_location
-      @data.each_with_index { |col,x| col.each_index { |y| yield [x, y] } }
-    end
-
-    attr_reader :data
-  end
-
-  class Cell
-    def initialize(food, pheremone)
-      @food, @pheremone = food, pheremone
-    end
-
-    attr_accessor :food, :pheremone, :ant, :home
-  end
-
   class Ant
     def initialize(direction, location)
-      @direction = direction
-      @location  = location
+      self.direction = direction
+      self.location  = location
     end
 
     attr_accessor :food, :direction, :location
   end
 
-  class Simulator
-    DIMENSIONS  = 80
-    FOOD_PLACES = 35
-    FOOD_RANGE  = 100
-    HOME_OFFSET = DIMENSIONS / 4
-    NANTS_SQRT  = 7
-    HOME_RANGE  = HOME_OFFSET ... HOME_OFFSET + NANTS_SQRT
-    DIR_DELTA   = [ [0, -1], [ 1, -1], [ 1, 0], [ 1,  1],
-                    [0,  1], [-1,  1], [-1, 0], [-1, -1] ]
-
-    EVAP_RATE    = 0.99
-    ANT_SLEEP    = 0.04
-
-    def initialize
-      @world          = World.new(80)
-      @ants           = []
-      @running        = true
-
-      FOOD_PLACES.times do
-        @world.sample.food = rand(FOOD_RANGE)
-      end
-
-      HOME_RANGE.to_a.product(HOME_RANGE.to_a).map do |x,y|
-        ant = Ant.new(rand(8), [x,y])
-       
-        @world[[x,y]].home = true
-        @world[[x,y]].ant  = ant
-
-        @ants << ant
-      end
+  class Cell
+    def initialize(food, home_pheremone, food_pheremone)
+      self.food = food 
+      self.home_pheremone = home_pheremone
+      self.food_pheremone = food_pheremone
     end
 
-    attr_reader :world, :ants
-
-    def delta_loc(loc, dir)
-      x,y =     loc
-
-      dx, dy = DIR_DELTA[dir % 8]
-
-      [(x + dx) % DIMENSIONS, (y + dy) % DIMENSIONS]
-    end
-
-    def turn(loc, amt)
-      cell = @world[loc]
-      ant  = cell.ant
-
-      ant.direction = (ant.direction + amt) % 8
-
-      loc
-    end
-
-    def move(loc)
-      old_cell = @world[loc]
-      ant      = old_cell.ant
-
-      new_loc  = delta_loc(loc, ant.direction)
-      new_cell = @world[new_loc]
-
-      new_cell.ant = ant
-      old_cell.ant = nil
-
-      ant.location = new_loc
-
-      old_cell.pheremone += 1 unless old_cell.home
-
-      new_loc
-    end
-
-    def take_food(loc)
-      cell = @world[loc]
-      ant  = cell.ant
-
-      cell.food -= 1
-      ant.food   = true
-
-      loc
-    end
-
-    def drop_food(loc)
-      cell = @world[loc]
-      ant  = cell.ant
-
-      cell.food += 1
-      ant.food   = false
-
-      loc
-    end
-
-    def evaporate
-      @world.each { |cell| cell.pheremone *= EVAP_RATE }
-    end
-
-    def behave(loc)
-      cell = @world[loc]
-      ant  = cell.ant
-
-      ahead       = world[delta_loc(loc, ant.direction)]
-      ahead_left  = world[delta_loc(loc, ant.direction - 1)]
-      ahead_right = world[delta_loc(loc, ant.direction + 1)] 
-
-      places = [ahead, ahead_left, ahead_right]
-
-      case action = Optimizer.run(cell, places)
-      when :drop_food
-        drop_food(loc)
-        turn(loc, 4)
-      when :take_food
-        take_food(loc)
-        turn(loc, 4)
-      when :move_forward
-        move(loc)
-      when :turn_left
-        turn(loc, -1)
-      when :turn_right
-        turn(loc, 1)
-      else
-        raise NotImplementedError, action.inspect
-      end
-
-      ant.location
-    end
+    attr_accessor :food, :home_pheremone, :food_pheremone, :ant, :home
   end
 
-  require "forwardable"
-
-  class Optimizer
-    def self.run(*a, &b)
-      new.run(*a, &b)
+  class World
+    def initialize(world_size)
+      self.size = world_size
+      self.data = size.times.map { size.times.map { Cell.new(0,0,0) } }
     end
 
-    def run(cell, places)
-      ant   = cell.ant
-      ahead = places.first
+    attr_reader :size
 
-      if ant.food
-        case
-        when cell.home
-          :drop_food
-        when ahead.home && (! ahead.ant)
-          :move_forward
-        else
-          home_ranking = rank_by(places) { |cell| cell.home ? 1 : 0 }
-          pher_ranking = rank_by(places) { |cell| cell.pheremone }
+    def [](location)
+      x,y = location
 
-          ranks = combined_ranks(home_ranking, pher_ranking)
+      data[x][y]
+    end
 
-          follow_trail(ranks, places)
-        end
-      else
-        case
-        when cell.food > 0 && (! cell.home)
-          :take_food
-        when ahead.food > 0 && (! ahead.home ) && (! ahead.ant )
-          :move_forward
-        else
-          food_ranking = rank_by(places) { |cell| cell.food }
-          pher_ranking = rank_by(places) { |cell| cell.pheremone }
+    def sample
+      data[rand(size)][rand(size)]
+    end
 
-          ranks = combined_ranks(food_ranking, pher_ranking)
-
-          follow_trail(ranks, places)
+    def each
+      data.each_with_index do |col,x| 
+        col.each_with_index do |cell, y| 
+          yield [cell, [x, y]]
         end
       end
     end
 
     private
+
+    attr_accessor :data
+    attr_writer   :size
+  end
+
+  require "set"
+
+  class Actor
+    DIR_DELTA   = [ [0, -1], [ 1, -1], [ 1, 0], [ 1,  1],
+                    [0,  1], [-1,  1], [-1, 0], [-1, -1] ]
+
+    def initialize(world, ant)
+      self.world   = world
+      self.ant     = ant
+
+      self.history = Set.new
+    end
+
+    attr_reader :ant
+
+    def mark_food_trail
+      history.each do |old_cell|
+        old_cell.food_pheremone += 1 unless old_cell.food > 0 
+      end
+
+      history.clear
+
+      self
+    end
+
+    def mark_home_trail
+      history.each do |old_cell|
+        old_cell.home_pheremone += 1 unless old_cell.home
+      end
+
+      history.clear
+
+      self
+    end
+
+    def drop_food
+      here.food += 1
+      ant.food   = false
+
+      self
+    end
+
+    def take_food
+      here.food -= 1
+      ant.food   = true
+
+      self
+    end
+
+    def turn(amt)
+      ant.direction = (ant.direction + amt) % 8
+
+      self
+    end
+
+    def move
+      history << here
+
+      new_location = neighbor(ant.direction)
+
+      ahead.ant = ant
+      here.ant  = nil
+
+      ant.location = new_location
+
+      self
+    end
+
+    def here
+      world[ant.location]
+    end
+
+    def ahead
+      world[neighbor(ant.direction)]
+    end
+
+    def ahead_left
+      world[neighbor(ant.direction - 1)]
+    end
+
+    def ahead_right
+      world[neighbor(ant.direction + 1)]
+    end
     
-    def combined_ranks(a,b)
-      a.merge(b) do |k,v| 
-        a[k] + b[k]
+    def nearby_places
+      [ahead, ahead_left, ahead_right]
+    end
+
+    private
+
+    def neighbor(direction)
+      x,y = ant.location
+
+      dx, dy = DIR_DELTA[direction % 8]
+
+      [(x + dx) % world.size, (y + dy) % world.size]
+    end
+
+    attr_accessor :world, :history
+    attr_writer   :ant
+  end
+
+  class Simulator
+    DIMENSIONS  = 80
+    FOOD_PLACES = 35
+    FOOD_RANGE  = 50
+    HOME_OFFSET = DIMENSIONS / 4
+    NANTS_SQRT  = 7
+    HOME_RANGE  = HOME_OFFSET ... HOME_OFFSET + NANTS_SQRT
+
+    EVAP_RATE    = 0.95
+    ANT_SLEEP    = 0.005
+
+    def initialize
+      self.world  = World.new(DIMENSIONS)
+      self.actors = []
+
+      FOOD_PLACES.times do
+        world.sample.food = FOOD_RANGE
+      end
+
+      HOME_RANGE.to_a.product(HOME_RANGE.to_a).map do |x,y|
+        ant = Ant.new(rand(8), [x,y])
+       
+        world[[x,y]].home = true
+        world[[x,y]].ant  = ant
+
+        actors << Actor.new(world, ant)
       end
     end
 
-    def follow_trail(ranks, places)
-      ahead, ahead_left, ahead_right = places
+    attr_reader :world, :actors
 
+    def iterate
+      actors.each do |actor|
+        optimizer = Optimizer.new(actor.here, actor.nearby_places)
+        action    = actor.ant.food ? optimizer.seek_home : optimizer.seek_food
+
+        case action
+        when :drop_food
+          actor.drop_food.mark_food_trail.turn(4)
+        when :take_food
+          actor.take_food.mark_home_trail.turn(4)
+        when :move_forward
+          actor.move
+        when :turn_left
+          actor.turn(-1)
+        when :turn_right
+          actor.turn(1)
+        else
+          raise NotImplementedError, action.inspect
+        end
+      end
+
+      sleep ANT_SLEEP
+    end
+
+    def evaporate
+      world.each do |cell, (x,y)| 
+        cell.home_pheremone *= EVAP_RATE 
+        cell.food_pheremone *= EVAP_RATE
+      end
+    end
+
+    private
+
+    attr_writer :world, :actors
+  end
+
+  require "forwardable"
+
+  class Optimizer
+    BEST_CHOICE_BONUS = 3
+
+    extend Forwardable
+
+    def initialize(here, nearby_places)
+      self.here          = here
+      self.nearby_places = nearby_places
+
+      self.ahead, self.ahead_left, self.ahead_right = nearby_places
+    end
+
+    attr_reader :here, :nearby_places, :ahead, :ahead_left, :ahead_right
+
+    def seek_home
+      if here.home
+        :drop_food
+      elsif ahead.home && (! ahead.ant)
+        :move_forward
+      else
+        home_ranking = rank_by { |cell| cell.home ? 1 : 0 }
+        pher_ranking = rank_by { |cell| cell.home_pheremone }
+
+        ranks = combined_ranks(home_ranking, pher_ranking)
+        follow_trail(ranks)
+      end
+    end
+
+    def seek_food
+      if here.food > 0 && (! here.home)
+        :take_food
+      elsif ahead.food > 0 && (! ahead.home ) && (! ahead.ant )
+        :move_forward
+      else
+        food_ranking = rank_by { |cell| cell.food }
+        pher_ranking = rank_by { |cell| cell.food_pheremone }
+
+        ranks = combined_ranks(food_ranking, pher_ranking)
+        follow_trail(ranks)
+      end
+    end
+
+    private
+
+    attr_writer :here, :nearby_places, :ahead, :ahead_left, :ahead_right
+
+    def follow_trail(ranks)
       choice = wrand([ ahead.ant ? 0 : ranks[ahead],
                        ranks[ahead_left],
                        ranks[ahead_right]])
 
       [:move_forward, :turn_left, :turn_right][choice]
     end
+    
+    def combined_ranks(a,b)
+      combined = a.merge(b) { |k,v|  a[k] + b[k] }
+      top_k, _ = combined.max_by { |k,v| v }
 
-    def rank_by(xs, &keyfn)
-      sorted = xs.sort_by { |e| keyfn.call(e).to_f }
+      combined[top_k] *= BEST_CHOICE_BONUS
 
-      r = Hash.new { |h,k| h[k] = 0 }
+      combined
+    end
 
-      (0...sorted.length).each do |i|
-        r[sorted[i]] = i + 1
-      end
+    def rank_by(&keyfn)
+      ranks  = Hash.new { |h,k| h[k] = 0 }
+      sorted = nearby_places.sort_by { |e| keyfn.call(e).to_f }
 
-      r
+      (0...sorted.length).each { |i| ranks[sorted[i]] = i + 1 }
+
+      ranks
     end
 
     def wrand(slices)
@@ -257,6 +314,7 @@ module AntSim
 
     import java.awt.Color
     import java.awt.Graphics
+    import java.awt.BasicStroke
     import java.awt.Dimension
 
     import java.awt.image.BufferedImage
@@ -265,7 +323,7 @@ module AntSim
 
 
     SCALE           = 10
-    PHEREMONE_SCALE = 20.0
+    PHEREMONE_SCALE = 10.0
     FOOD_SCALE      = 30.0
 
     def self.run
@@ -278,10 +336,8 @@ module AntSim
 
       food_cells = []
 
-      sim.world.data.each_with_index do |col, x|
-        col.each_with_index do |cell, y|
-          food_cells << [[x,y], cell] if cell.food > 0
-        end
+      sim.world.each do |cell, (x,y)|
+        food_cells << [[x,y], cell] if cell.food > 0
       end
 
       panel = Class.new(JPanel) { 
@@ -298,16 +354,13 @@ module AntSim
       t = Time.now
 
       loop do
-        if Time.now - t > 1
+        if Time.now - t > 0.2
           sim.evaporate
           t = Time.now
         end
 
-        sim.ants.each do |ant|
-          sim.behave(ant.location)
-        end
+        sim.iterate
 
-        sleep Simulator::ANT_SLEEP
         panel.repaint
       end
     end
@@ -325,13 +378,16 @@ module AntSim
       hx, hy, tx, ty = [[2, 0, 2, 4], [4, 0, 0, 4], [4, 2, 0, 2], [4, 4, 0, 0],
                         [2, 4, 2, 0], [0, 4, 4, 0], [0, 2, 4, 2], [0, 0, 4, 4]][ant.direction]
 
+      g.setStroke(BasicStroke.new(3))
       g.setColor(ant.food ? Color.new(255, 0, 0, 255) : Color.new(0, 0, 0, 255))
       g.drawLine(hx + x * SCALE, hy + y * SCALE, tx + x * SCALE, ty + y * SCALE)
     end
 
     def render_place(g, cell, x, y)
-      if cell.pheremone > 0
-        fill_cell(g, x, y, Color.new(0, 255, 0, [255 * (cell.pheremone / PHEREMONE_SCALE), 255].min.to_i))
+      if cell.food_pheremone > 0
+        fill_cell(g, x, y, Color.new(0,0,255, [255 * (cell.food_pheremone / PHEREMONE_SCALE), 255].min.to_i))
+      elsif cell.home_pheremone > 0
+        fill_cell(g, x, y, Color.new(0, 255, 0, [255 * (cell.home_pheremone / PHEREMONE_SCALE), 255].min.to_i))
       end
 
       if cell.food > 0
@@ -355,8 +411,8 @@ module AntSim
       bg.setColor(Color.white)
       bg.fillRect(0,0, img.getWidth, img.getHeight)
 
-      sim.world.each_location do |x,y|
-        render_place(bg, sim.world[[x,y]], x, y)
+      sim.world.each do |cell, (x,y)|
+        render_place(bg, cell, x, y)
       end
 
       bg.setColor(Color.blue)
