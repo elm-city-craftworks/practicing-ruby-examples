@@ -11,20 +11,6 @@ module AntSim
 
     attr_reader :here, :nearby_places, :ahead, :ahead_left, :ahead_right
 
-    def seek_home
-      if here.home
-        :drop_food
-      elsif ahead.home && (! ahead.ant)
-        :move_forward
-      else
-        home_ranking = rank_by { |cell| cell.home ? 1 : 0 }
-        pher_ranking = rank_by { |cell| cell.home_pheremone }
-
-        ranks = combined_ranks(home_ranking, pher_ranking)
-        follow_trail(ranks)
-      end
-    end
-
     def seek_food
       if here.food > 0 && (! here.home)
         :take_food
@@ -39,9 +25,19 @@ module AntSim
       end
     end
 
-    private
+    def seek_home
+      if here.home
+        :drop_food
+      elsif ahead.home && (! ahead.ant)
+        :move_forward
+      else
+        home_ranking = rank_by { |cell| cell.home ? 1 : 0 }
+        pher_ranking = rank_by { |cell| cell.home_pheremone }
 
-    attr_writer :here, :nearby_places, :ahead, :ahead_left, :ahead_right
+        ranks = combined_ranks(home_ranking, pher_ranking)
+        follow_trail(ranks)
+      end
+    end
 
     def follow_trail(ranks)
       choice = wrand([ ahead.ant ? 0 : ranks[ahead],
@@ -50,6 +46,10 @@ module AntSim
 
       [:move_forward, :turn_left, :turn_right][choice]
     end
+
+    private
+
+    attr_writer :here, :nearby_places, :ahead, :ahead_left, :ahead_right
     
     def combined_ranks(a,b)
       combined = a.merge(b) { |k,v|  a[k] + b[k] }

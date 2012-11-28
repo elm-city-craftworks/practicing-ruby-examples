@@ -33,7 +33,12 @@ module AntSim
     def iterate
       actors.each do |actor|
         optimizer = Optimizer.new(actor.here, actor.nearby_places)
-        action    = actor.ant.food ? optimizer.seek_home : optimizer.seek_food
+        
+        if actor.foraging?
+          action = optimizer.seek_food
+        else
+          action = optimizer.seek_home
+        end
 
         case action
         when :drop_food

@@ -2,8 +2,8 @@ require "set"
 
 module AntSim
   class Actor
-    DIR_DELTA   = [ [0, -1], [ 1, -1], [ 1, 0], [ 1,  1],
-                    [0,  1], [-1,  1], [-1, 0], [-1, -1] ]
+    DIR_DELTA   = [[0, -1], [ 1, -1], [ 1, 0], [ 1,  1],
+                   [0,  1], [-1,  1], [-1, 0], [-1, -1]]
 
     def initialize(world, ant)
       self.world   = world
@@ -13,6 +13,39 @@ module AntSim
     end
 
     attr_reader :ant
+
+    def turn(amt)
+      ant.direction = (ant.direction + amt) % 8
+
+      self
+    end
+
+    def move
+      history << here
+
+      new_location = neighbor(ant.direction)
+
+      ahead.ant = ant
+      here.ant  = nil
+
+      ant.location = new_location
+
+      self
+    end
+
+    def drop_food
+      here.food += 1
+      ant.food   = false
+
+      self
+    end
+
+    def take_food
+      here.food -= 1
+      ant.food   = true
+
+      self
+    end
 
     def mark_food_trail
       history.each do |old_cell|
@@ -34,37 +67,8 @@ module AntSim
       self
     end
 
-    def drop_food
-      here.food += 1
-      ant.food   = false
-
-      self
-    end
-
-    def take_food
-      here.food -= 1
-      ant.food   = true
-
-      self
-    end
-
-    def turn(amt)
-      ant.direction = (ant.direction + amt) % 8
-
-      self
-    end
-
-    def move
-      history << here
-
-      new_location = neighbor(ant.direction)
-
-      ahead.ant = ant
-      here.ant  = nil
-
-      ant.location = new_location
-
-      self
+    def foraging?
+      !ant.food
     end
 
     def here
