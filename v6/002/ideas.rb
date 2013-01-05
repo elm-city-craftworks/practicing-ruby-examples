@@ -8,26 +8,22 @@ module Weiqi
     import java.awt.BasicStroke
     import java.awt.Dimension
     import java.awt.geom.Ellipse2D;
+    import java.awt.event.MouseAdapter
 
     import java.awt.image.BufferedImage
     import javax.swing.JPanel
     import javax.swing.JFrame
 
+    class MoveListener < MouseAdapter
+      def mouseClicked(event)
+        p [event.getX, event.getY]
+      end
+    end
+
     class Panel < JPanel
-      def paint(g)
-        require "sgf"
+      attr_accessor :white_stones, :black_stones
 
-        parser = SGF::Parser.new
-        game   = parser.parse("foo.sgf").games.first
-
-        node   = game.current_node
-
-
-        alpha = ("a".."z").to_a
-
-        white_stones = node[:AW].map { |coord| [alpha.index(coord[0]), alpha.index(coord[1])] }
-        black_stones = node[:AB].map { |coord| [alpha.index(coord[0]), alpha.index(coord[1])] }
-
+      def paintComponent(g)
         image = BufferedImage.new(800,800, BufferedImage::TYPE_INT_ARGB)
 
         bg = image.getGraphics
@@ -60,19 +56,20 @@ module Weiqi
       end
     end
 
-    def self.run
+    def self.run(white_stones, black_stones)
       panel = Panel.new
       panel.setPreferredSize(Dimension.new(800, 800))
+
+      panel.white_stones = white_stones
+      panel.black_stones = black_stones
+
+      move_listener = MoveListener.new
+      panel.addMouseListener(move_listener)
 
       frame = JFrame.new
       frame.add(panel)
       frame.pack
       frame.show
-
-      loop do
-        sleep 1
-        panel.repaint
-      end
     end
   end
 end
@@ -84,7 +81,20 @@ end
 #sgf[/AB((\[\w\w\])+)/].scan(/\[(\w\w)\]/).flatten.map { |e| [("a".."z").to_a.index(e.chars.to_a.first), ("a".."z").to_a.index(e.chars.to_a.last)] }
 
 
-Weiqi::UI.run
+require "sgf"
+
+parser = SGF::Parser.new
+game   = parser.parse("foo.sgf").games.first
+
+node   = game.current_node
+
+
+alpha = ("a".."z").to_a
+
+white_stones = node[:AW].map { |coord| [alpha.index(coord[0]), alpha.index(coord[1])] }
+black_stones = node[:AB].map { |coord| [alpha.index(coord[0]), alpha.index(coord[1])] }
+
+Weiqi::UI.run(white_stones, black_stones)
 
 #require "net/telnet"
 
