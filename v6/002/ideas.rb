@@ -1,3 +1,6 @@
+require "socket"
+require "net/telnet"
+
 module Weiqi
 
   class UI
@@ -15,8 +18,65 @@ module Weiqi
     import javax.swing.JFrame
 
     class MoveListener < MouseAdapter
-      def mouseClicked(event)
-        p [event.getX, event.getY]
+      attr_accessor :game
+
+      # http://stackoverflow.com/questions/3382330/mouselistener-for-jpanel-missing-mouseclicked-events
+      def mouseReleased(event)
+        game.move(((event.getX - 125) / 30.0).round, ((event.getY - 125) / 30.0).round)
+      end
+    end
+
+    require "tempfile"
+
+    class Game 
+      def initialize(&observer)
+        @observer = observer
+      end
+
+      def socket
+        @socket ||= TCPSocket.new("localhost", 9000)
+      end
+
+      def move(x,y)
+        coord = "#{(("A".."Z").to_a - ["I"])[x]}#{19 - y}"
+
+        command("play B #{coord}")
+        update_board
+
+        Thread.new do
+          command("genmove W")
+          update_board
+        end
+      end
+
+      def update_board
+        Dir.mktmpdir do |dir|
+          command("printsgf #{dir}/foo.sgf")
+
+          parser = SGF::Parser.new
+          game   = parser.parse("#{dir}/foo.sgf").games.first
+
+          node   = game.current_node
+
+
+          alpha = ("a".."z").to_a
+
+          white_stones = (node[:AW] || []).map { |coord| [alpha.index(coord[0]), alpha.index(coord[1])] }
+          black_stones = (node[:AB] || []).map { |coord| [alpha.index(coord[0]), alpha.index(coord[1])] }
+          
+          @observer.call(white_stones, black_stones)
+        end
+      end
+
+      def command(msg)
+        socket.puts(msg)
+
+        buffer = ""
+        until (line = socket.gets) == "\n"
+          buffer << line
+        end
+        
+        buffer
       end
     end
 
@@ -28,7 +88,7 @@ module Weiqi
 
         bg = image.getGraphics
         
-        bg.setColor(Color.white)
+        bg.setColor(Color.new(222, 184, 135, 255))
         bg.fillRect(0,0,image.getWidth, image.getHeight)
 
         18.times.to_a.product(18.times.to_a) do |x,y|
@@ -38,6 +98,19 @@ module Weiqi
           bg.setStroke(BasicStroke.new(1))
           bg.drawRect(125+x*30,125+y*30,30,30)
         end
+
+        bg.setColor(Color.black)
+        bg.fillArc(120+30*3, 120+30*3, 10, 10, 0, 360)
+        bg.fillArc(120+30*3, 120+30*9, 10, 10, 0, 360)
+        bg.fillArc(120+30*3, 120+30*15, 10, 10, 0, 360)
+
+        bg.fillArc(120+30*9, 120+30*3, 10, 10, 0, 360)
+        bg.fillArc(120+30*9, 120+30*9, 10, 10, 0, 360)
+        bg.fillArc(120+30*9, 120+30*15, 10, 10, 0, 360)
+
+        bg.fillArc(120+30*15, 120+30*3, 10, 10, 0, 360)
+        bg.fillArc(120+30*15, 120+30*9, 10, 10, 0, 360)
+        bg.fillArc(120+30*15, 120+30*15, 10, 10, 0, 360)
 
         white_stones.each do |x,y|
           bg.setColor(Color.white)
@@ -56,20 +129,30 @@ module Weiqi
       end
     end
 
-    def self.run(white_stones, black_stones)
+    def self.run
       panel = Panel.new
       panel.setPreferredSize(Dimension.new(800, 800))
 
-      panel.white_stones = white_stones
-      panel.black_stones = black_stones
-
-      move_listener = MoveListener.new
-      panel.addMouseListener(move_listener)
+      # FIXME: Ugly
+      panel.white_stones = []
+      panel.black_stones = []
 
       frame = JFrame.new
       frame.add(panel)
       frame.pack
       frame.show
+
+      move_listener = MoveListener.new
+
+      game = Game.new do |white_stones, black_stones| 
+               panel.white_stones = white_stones
+               panel.black_stones = black_stones
+               panel.repaint
+             end
+               
+      move_listener.game = game
+      
+      panel.addMouseListener(move_listener)
     end
   end
 end
@@ -83,18 +166,11 @@ end
 
 require "sgf"
 
-parser = SGF::Parser.new
-game   = parser.parse("foo.sgf").games.first
-
-node   = game.current_node
 
 
-alpha = ("a".."z").to_a
+#Thread.new { system("gnugo --gtp-listen 9999 --mode gtp") }
 
-white_stones = node[:AW].map { |coord| [alpha.index(coord[0]), alpha.index(coord[1])] }
-black_stones = node[:AB].map { |coord| [alpha.index(coord[0]), alpha.index(coord[1])] }
-
-Weiqi::UI.run(white_stones, black_stones)
+Weiqi::UI.run
 
 #require "net/telnet"
 
@@ -103,13 +179,9 @@ Weiqi::UI.run(white_stones, black_stones)
 # 
 
 =begin
-Thread.new { system("gnugo --gtp-listen 9999 --mode gtp") }
-sleep 2
 
-gnugo = Net::Telnet.new("Host"    => "localhost",
-                        "Port"    => "9999",
-                        "Timeout" => false,
-                        "Prompt"  => /^\n$/)
+
+
 
 gnugo.cmd("showboard") { |c| print c }
 
