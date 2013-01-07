@@ -1,3 +1,5 @@
+require_relative "board"
+
 module Weiqi
   class UI
     include Java
