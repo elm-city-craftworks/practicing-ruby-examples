@@ -7,26 +7,38 @@ require_relative "board"
 
 module Weiqi
   class GnuGo
-    HOST = "localhost"
-    PORT = 9001
+    HOST       = "localhost"
+    PORT       = 9000
+    BOARD_SIZE = 5
 
     def self.start_server
       Thread.new do
-        system("gnugo --gtp-listen #{PORT} --mode gtp")
+        system("gnugo --gtp-listen #{PORT} --mode gtp --boardsize #{BOARD_SIZE}")
       end
 
       sleep 2
     end
 
-    def play_black(x, y)
-      coords = go_coords(x, y)
+    def initialize
+      @history = []
+    end
 
-      command("play B #{coords}")
-      update_board
+    def play_black(x, y)
+      if (0..BOARD_SIZE).include?(x) && (0..BOARD_SIZE).include?(y)
+        coords = go_coords(x, y)
+        @history << coords
+
+        command("play B #{coords}")
+        update_board
+      else
+        @history << "PASS"
+        command("play B PASS")
+        update_board
+      end
     end
 
     def play_white
-      command("genmove W")
+      @history << command("genmove W")[2..-2]
       update_board
     end
 
@@ -35,25 +47,33 @@ module Weiqi
     end
 
     def update_board
-      Dir.mktmpdir do |dir|
-        command("printsgf #{dir}/foo.sgf")
+      p @history
 
-        parser = SGF::Parser.new
-        game   = parser.parse("#{dir}/foo.sgf").games.first
+      if @history.last(2) == ["PASS", "PASS"]
+        command("final_score")
+        quit
+        exit!
+      else
+        Dir.mktmpdir do |dir|
+          command("printsgf #{dir}/foo.sgf")
 
-        node   = game.current_node
+          parser = SGF::Parser.new
+          game   = parser.parse("#{dir}/foo.sgf").games.first
 
-        black_stones = (node[:AB] || []).map { |coord| cartesian_coords(coord) }
-        white_stones = (node[:AW] || []).map { |coord| cartesian_coords(coord) }
-      
-        Board.new(black_stones, white_stones)
+          node   = game.current_node
+
+          black_stones = (node[:AB] || []).map { |coord| cartesian_coords(coord) }
+          white_stones = (node[:AW] || []).map { |coord| cartesian_coords(coord) }
+        
+          Board.new(black_stones, white_stones)
+        end
       end
     end
     
     private
 
     def go_coords(x,y)
-      "#{(("A".."Z").to_a - ["I"])[x]}#{19 - y}"
+      "#{(("A".."Z").to_a - ["I"])[x]}#{BOARD_SIZE - y}"
     end
 
     def cartesian_coords(coord)
@@ -66,12 +86,15 @@ module Weiqi
     end
 
     def command(msg)
+      STDERR.puts("COMMAND: #{msg}")
       socket.puts(msg)
 
       buffer = ""
       until (line = socket.gets) == "\n"
         buffer << line
       end
+
+      STDERR.puts("RESPONSE: #{buffer}")
       
       buffer
     end
