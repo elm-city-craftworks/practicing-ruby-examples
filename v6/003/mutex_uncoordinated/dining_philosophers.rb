@@ -87,4 +87,4 @@ end
 
 threads.each(&:join)
 
-sleep(10000)
+sleep
