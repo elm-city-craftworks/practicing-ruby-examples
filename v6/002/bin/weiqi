@@ -1,9 +1,0 @@
-#!/usr/bin/env ruby
-
-require_relative "../lib/weiqi/gnu_go"
-require_relative "../lib/weiqi/game"
-require_relative "../lib/weiqi/ui"
-
-Weiqi::GnuGo.start_server
-
-Weiqi::UI.run(Weiqi::Game.new(Weiqi::GnuGo.new))
