@@ -46,18 +46,12 @@ class Philosopher
 
   def think
     puts "#{name} is thinking"
-
-    # Removed pause to see actual deadlock
-    # sleep(rand)
   end
 
   def eat
     pick_chopsticks
 
     puts "#{name} is eating."
-
-    # Removed pause to see actual deadlock
-    # sleep(rand)
 
     drop_chopsticks
   end
