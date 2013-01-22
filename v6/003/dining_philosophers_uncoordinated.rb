@@ -12,7 +12,10 @@ class Philosopher
     @left_chopsitck  = table.left_chopsitck_at(position)
     @right_chopsitck = table.right_chopsitck_at(position)
 
-    think
+    loop do
+      think
+      eat
+    end
   end
 
   def think
@@ -20,8 +23,6 @@ class Philosopher
 
     # Removed pause to see actual deadlock
     # sleep(rand)
-
-    eat
   end
 
   def eat
@@ -33,8 +34,6 @@ class Philosopher
     # sleep(rand)
 
     drop_chopsitcks
-
-    think
   end
 
   def pick_chopsitcks
