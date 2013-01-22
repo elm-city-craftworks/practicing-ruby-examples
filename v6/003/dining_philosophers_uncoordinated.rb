@@ -2,15 +2,15 @@ require_relative 'lib/chopstick'
 require_relative 'lib/table'
 
 class Philosopher
-  attr_reader :name, :thought, :left_chopsitck, :right_chopsitck
+  attr_reader :name, :thought, :left_chopstick, :right_chopstick
 
   def initialize(name)
     @name = name
   end
 
   def seat(table, position)
-    @left_chopsitck  = table.left_chopsitck_at(position)
-    @right_chopsitck = table.right_chopsitck_at(position)
+    @left_chopstick  = table.left_chopstick_at(position)
+    @right_chopstick = table.right_chopstick_at(position)
 
     loop do
       think
@@ -26,24 +26,24 @@ class Philosopher
   end
 
   def eat
-    pick_chopsitcks
+    pick_chopsticks
 
     puts "#{name} is eating."
 
     # Removed pause to see actual deadlock
     # sleep(rand)
 
-    drop_chopsitcks
+    drop_chopsticks
   end
 
-  def pick_chopsitcks
-    left_chopsitck.pick
-    right_chopsitck.pick
+  def pick_chopsticks
+    left_chopstick.pick
+    right_chopstick.pick
   end
 
-  def drop_chopsitcks
-    left_chopsitck.drop
-    right_chopsitck.drop
+  def drop_chopsticks
+    left_chopstick.drop
+    right_chopstick.drop
   end
 end
 
