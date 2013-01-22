@@ -1,9 +1,9 @@
-#require "bundler/setup"
+require "bundler/setup"
 require 'celluloid'
 
-require_relative 'lib/chopstick'
-require_relative 'lib/table'
-require_relative 'lib/philosopher'
+require_relative '../lib/chopstick'
+require_relative '../lib/table'
+require_relative '../lib/philosopher'
 
 class ActorPhilosopher < Philosopher
   include Celluloid

@@ -1,8 +1,8 @@
-require_relative 'lib/chopstick'
-require_relative 'lib/philosopher'
-require_relative 'lib/table'
+require_relative '../lib/chopstick'
+require_relative '../lib/philosopher'
+require_relative '../lib/table'
 
-require_relative 'lib/actors'
+require_relative '../lib/actors'
 
 class ActorPhilosopher < Philosopher
   include Actor

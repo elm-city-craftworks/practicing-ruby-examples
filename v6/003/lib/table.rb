@@ -1,19 +1,19 @@
 class Table
-  attr_reader :chopsticks, :philosophers
+  attr_reader :chopsitcks, :philosophers
 
   def initialize(philosophers)
     @philosophers = philosophers
-    @chopsticks   = philosophers.size.times.collect { Chopstick.new }
+    @chopsitcks   = philosophers.size.times.collect { Chopstick.new }
   end
 
-  def left_chopstick_at(position)
-    index = position % chopsticks.size
-    chopsticks[index]
+  def left_chopsitck_at(position)
+    index = position % chopsitcks.size
+    chopsitcks[index]
   end
 
-  def right_chopstick_at(position)
-    index = (position + 1) % chopsticks.size
-    chopsticks[index]
+  def right_chopsitck_at(position)
+    index = (position + 1) % chopsitcks.size
+    chopsitcks[index]
   end
 end
 
@@ -21,19 +21,19 @@ class TableWithMutex < Table
 
   def request_to_eat(philosopher)
     @mutex.synchronize do
-      sleep(rand) while chopsticks_in_use >= max_chopsticks
-      philosopher.pick_chopsticks
+      sleep(rand) while chopsitcks_in_use >= max_chopsitcks
+      philosopher.pick_chopsitcks
     end
 
     philosopher.eat
   end
 
-  def max_chopsticks
-    chopsticks.size - 1
+  def max_chopsitcks
+    chopsitcks.size - 1
   end
 
-  def chopsticks_in_use
-    @chopsticks.select { |f| f.in_use? }.size
+  def chopsitcks_in_use
+    @chopsitcks.select { |f| f.in_use? }.size
   end
 end
 
