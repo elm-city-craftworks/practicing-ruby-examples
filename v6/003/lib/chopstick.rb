@@ -9,5 +9,8 @@ class Chopstick
 
   def drop
     @mutex.unlock
+
+  rescue ThreadError
+    puts "Trying to drop a chopstick not acquired"
   end
 end
