@@ -57,7 +57,7 @@ class Table
   def initialize(philosophers)
     @philosophers = philosophers
 
-    @chopsticks = philosophers.size.times.collect { Chopstick.new }
+    @chopsticks = philosophers.size.times.map { Chopstick.new }
 
     @mutex = Mutex.new
   end
@@ -93,11 +93,11 @@ end
 
 names = %w{Heraclitus Aristotle Epictetus Schopenhauer Popper}
 
-philosophers = names.collect { |name| Philosopher.new(name) }
+philosophers = names.map { |name| Philosopher.new(name) }
 
 table = Table.new(philosophers)
 
-philosophers.each_with_index.collect do |philosopher, i|
+philosophers.map.with_index do |philosopher, i|
   Thread.new do 
     philosopher.seat(table, i) 
     
