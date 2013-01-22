@@ -31,6 +31,10 @@ class ActorPhilosopher < Philosopher
     @waiter.async.done_eating(Actor.current)
     think
   end
+
+  def finalize
+    drop_chopsitcks
+  end
 end
 
 class Waiter
