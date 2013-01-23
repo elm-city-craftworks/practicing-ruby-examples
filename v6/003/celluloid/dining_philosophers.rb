@@ -22,7 +22,7 @@ class Table
 
   def initialize(philosophers, waiter)
     @philosophers = philosophers
-    @chopsticks   = philosophers.size.times.collect { Chopstick.new }
+    @chopsticks   = philosophers.size.times.map { Chopstick.new }
     @waiter       = waiter
   end
 
@@ -109,7 +109,7 @@ end
 
 names = %w{Heraclitus Aristotle Epictetus Schopenhauer Popper}
 
-philosophers = names.collect { |name| Philosopher.new(name) }
+philosophers = names.map { |name| Philosopher.new(name) }
 
 waiter = Waiter.new(philosophers)
 
