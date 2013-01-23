@@ -47,6 +47,7 @@ class Philosopher
     @name = name
   end
 
+  # FIXME: Why does it not work to call async in here?
   def dine(table, position)
     @waiter = table.waiter
 
