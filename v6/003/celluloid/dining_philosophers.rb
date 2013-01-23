@@ -115,7 +115,7 @@ waiter = Waiter.new(philosophers)
 table = Table.new(philosophers, waiter)
 
 philosophers.each_with_index do |philosopher, i| 
-  philosopher.dine(table, i) 
+  philosopher.async.dine(table, i) 
 end
 
 sleep

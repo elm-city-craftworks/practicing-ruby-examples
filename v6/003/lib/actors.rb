@@ -27,9 +27,10 @@ module Actor
 
       @async_proxy = AsyncProxy.new(self)
 
-      @thread = Thread.new { process_messages }
-      @thread[:actor] = self
-      @thread.run
+      @thread = Thread.new do
+        Thread.current[:actor] = self
+        process_messages 
+      end
     end
 
     def async(meth = nil, *args)
