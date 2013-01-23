@@ -52,7 +52,7 @@ class Philosopher
     @left_chopstick  = table.left_chopstick_at(position)
     @right_chopstick = table.right_chopstick_at(position)
 
-    async.think
+    think
   end
 
   def think
