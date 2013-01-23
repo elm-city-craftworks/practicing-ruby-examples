@@ -23,11 +23,18 @@ class Philosopher
     @name = name
   end
 
-  def seat(table, position)
+  def dine(table, position)
     @table = table
 
     @left_chopstick  = table.left_chopstick_at(position)
     @right_chopstick = table.right_chopstick_at(position)
+
+    Thread.new do
+      loop do
+        think
+        @table.request_to_eat(self)
+      end
+    end
   end
 
   def think
@@ -97,15 +104,9 @@ philosophers = names.map { |name| Philosopher.new(name) }
 
 table = Table.new(philosophers)
 
-philosophers.map.with_index do |philosopher, i|
-  Thread.new do 
-    philosopher.seat(table, i) 
-    
-    loop do
-      philosopher.think
-      table.request_to_eat(philosopher)
-    end
-  end
+threads = philosophers.map.with_index do |philosopher, i|
+  philosopher.dine(table, i) 
 end
 
+threads.each(&:join)
 sleep

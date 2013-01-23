@@ -46,13 +46,13 @@ class Philosopher
     @name = name
   end
 
-  def seat(table, position)
+  def dine(table, position)
     @waiter = table.waiter
 
     @left_chopstick  = table.left_chopstick_at(position)
     @right_chopstick = table.right_chopstick_at(position)
 
-    think
+    async.think
   end
 
   def think
@@ -112,9 +112,10 @@ names = %w{Heraclitus Aristotle Epictetus Schopenhauer Popper}
 philosophers = names.map { |name| Philosopher.new(name) }
 
 waiter = Waiter.new(philosophers)
-
 table = Table.new(philosophers, waiter)
 
-philosophers.each_with_index { |philosopher, i| philosopher.async.seat(table, i) }
+philosophers.each_with_index do |philosopher, i| 
+  philosopher.dine(table, i) 
+end
 
 sleep
