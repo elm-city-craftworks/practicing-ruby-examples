@@ -8,7 +8,7 @@ class Philosopher
     @name   = name
   end
 
-  def dine(table, waiter, position)
+  def dine(table, position, waiter)
     @left_chopstick  = table.left_chopstick_at(position)
     @right_chopstick = table.right_chopstick_at(position)
 
@@ -63,7 +63,7 @@ waiter       = Waiter.new
 table = Table.new(philosophers)
 
 threads = philosophers.map.with_index do |philosopher, i|
-  Thread.new { philosopher.dine(table, waiter, i) }
+  Thread.new { philosopher.dine(table, i, waiter) }
 end
 
 threads.each(&:join)

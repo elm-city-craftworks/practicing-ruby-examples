@@ -11,7 +11,7 @@ class Philosopher
     @name = name
   end
 
-  def dine(table, waiter, position)
+  def dine(table, position, waiter)
     @waiter = waiter
 
     @left_chopstick  = table.left_chopstick_at(position)
@@ -80,7 +80,7 @@ waiter = Waiter.new(philosophers)
 table = Table.new(philosophers)
 
 philosophers.each_with_index do |philosopher, i| 
-  philosopher.async.dine(table, waiter, i) 
+  philosopher.async.dine(table, i, waiter) 
 end
 
 sleep
