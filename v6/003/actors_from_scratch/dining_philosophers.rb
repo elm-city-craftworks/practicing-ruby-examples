@@ -80,4 +80,4 @@ table = Table.new(philosophers)
 
 philosophers.each_with_index { |philosopher, i| philosopher.async.dine(table, i, waiter) }
 
-sleep(10000)
+sleep
