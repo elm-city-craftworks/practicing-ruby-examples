@@ -27,7 +27,7 @@ class Philosopher
   end
 
   def eat
-    pick_chopsticks
+    take_chopsticks
     puts "#{name} is eating."
     sleep(rand)
     drop_chopsticks
@@ -36,9 +36,9 @@ class Philosopher
     think
   end
 
-  def pick_chopsticks
-    left_chopstick.pick
-    right_chopstick.pick
+  def take_chopsticks
+    left_chopstick.take
+    right_chopstick.take
   end
 
   def drop_chopsticks

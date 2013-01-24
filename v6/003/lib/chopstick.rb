@@ -3,7 +3,7 @@ class Chopstick
     @mutex = Mutex.new
   end
 
-  def pick
+  def take
     @mutex.lock
   end
 

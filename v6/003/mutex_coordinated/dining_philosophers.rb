@@ -22,9 +22,9 @@ class Philosopher
     puts "#{name} is thinking."
   end
 
-  def pick_chopsticks
-    left_chopstick.pick
-    right_chopstick.pick
+  def take_chopsticks
+    left_chopstick.take
+    right_chopstick.take
   end
 
   def drop_chopsticks
@@ -47,7 +47,7 @@ class Waiter
   def serve(table, philosopher)
     @mutex.synchronize do
       sleep(rand) while table.chopsticks_in_use >= table.max_chopsticks
-      philosopher.pick_chopsticks
+      philosopher.take_chopsticks
     end
 
     philosopher.eat
