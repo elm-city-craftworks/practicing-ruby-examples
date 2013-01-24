@@ -1,42 +1,6 @@
 require_relative '../lib/actors'
-
-class Chopstick
-  def initialize
-    @mutex = Mutex.new
-  end
-
-  def pick
-    @mutex.lock
-  end
-
-  def drop
-    @mutex.unlock
-
-  rescue ThreadError
-    puts "Trying to drop a chopstick not acquired"
-  end
-end
-
-class Table
-  attr_reader :chopsticks, :philosophers, :waiter
-
-  def initialize(philosophers, waiter)
-    @philosophers = philosophers
-    @chopsticks   = philosophers.size.times.map { Chopstick.new }
-    @waiter       = waiter
-  end
-
-  def left_chopstick_at(position)
-    index = position % chopsticks.size
-    chopsticks[index]
-  end
-
-  def right_chopstick_at(position)
-    index = (position + 1) % chopsticks.size
-    chopsticks[index]
-  end
-end
-
+require_relative "../lib/chopstick"
+require_relative "../lib/table"
 
 class Philosopher
   include Actor
@@ -47,9 +11,8 @@ class Philosopher
     @name = name
   end
 
-  # FIXME: Why does it not work to call async in here?
-  def dine(table, position)
-    @waiter = table.waiter
+  def dine(table, waiter, position)
+    @waiter = waiter
 
     @left_chopstick  = table.left_chopstick_at(position)
     @right_chopstick = table.right_chopstick_at(position)
@@ -113,8 +76,8 @@ philosophers = names.map { |name| Philosopher.new(name) }
 
 waiter = Waiter.new(philosophers)
 
-table = Table.new(philosophers, waiter)
+table = Table.new(philosophers)
 
-philosophers.each_with_index { |philosopher, i| philosopher.async.dine(table, i) }
+philosophers.each_with_index { |philosopher, i| philosopher.async.dine(table, waiter, i) }
 
 sleep(10000)

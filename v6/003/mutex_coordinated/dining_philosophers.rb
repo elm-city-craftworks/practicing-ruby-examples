@@ -1,39 +1,20 @@
-class Chopstick
-  def initialize
-    @mutex = Mutex.new
-  end
-
-  def pick
-    @mutex.lock
-  end
-
-  def drop
-    @mutex.unlock
-  end
-
-  def in_use?
-    @mutex.locked?
-  end
-end
+require_relative "../lib/chopstick"
+require_relative "../lib/table"
 
 class Philosopher
   attr_reader :name, :left_chopstick, :right_chopstick
 
   def initialize(name)
-    @name = name
+    @name   = name
   end
 
-  def dine(table, position)
-    @table = table
-
+  def dine(table, waiter, position)
     @left_chopstick  = table.left_chopstick_at(position)
     @right_chopstick = table.right_chopstick_at(position)
 
-    Thread.new do
-      loop do
-        think
-        @table.request_to_eat(self)
-      end
+    loop do
+      think
+      waiter.serve(table, self)
     end
   end
 
@@ -58,42 +39,18 @@ class Philosopher
   end
 end
 
-class Table
-  attr_reader :chopsticks, :philosophers
-
-  def initialize(philosophers)
-    @philosophers = philosophers
-
-    @chopsticks = philosophers.size.times.map { Chopstick.new }
-
+class Waiter
+  def initialize
     @mutex = Mutex.new
   end
 
-  def request_to_eat(philosopher)
+  def serve(table, philosopher)
     @mutex.synchronize do
-      sleep(rand) while chopsticks_in_use >= max_chopsticks
+      sleep(rand) while table.chopsticks_in_use >= table.max_chopsticks
       philosopher.pick_chopsticks
     end
 
     philosopher.eat
-  end
-
-  def max_chopsticks
-    chopsticks.size - 1
-  end
-
-  def left_chopstick_at(position)
-    index = (position - 1) % chopsticks.size
-    chopsticks[index]
-  end
-
-  def right_chopstick_at(position)
-    index = (position + 1) % chopsticks.size
-    chopsticks[index]
-  end
-
-  def chopsticks_in_use
-    @chopsticks.select { |f| f.in_use? }.size
   end
 end
 
@@ -101,11 +58,12 @@ end
 names = %w{Heraclitus Aristotle Epictetus Schopenhauer Popper}
 
 philosophers = names.map { |name| Philosopher.new(name) }
+waiter       = Waiter.new
 
 table = Table.new(philosophers)
 
 threads = philosophers.map.with_index do |philosopher, i|
-  philosopher.dine(table, i) 
+  Thread.new { philosopher.dine(table, waiter, i) }
 end
 
 threads.each(&:join)

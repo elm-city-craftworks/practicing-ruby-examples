@@ -1,36 +1,5 @@
-class Chopstick
-  def initialize
-    @mutex = Mutex.new
-  end
-
-  def pick
-    @mutex.lock
-  end
-
-  def drop
-    @mutex.unlock
-  end
-end
-
-class Table
-  attr_reader :chopsticks, :philosophers
-
-  def initialize(philosophers)
-    @philosophers = philosophers
-    @chopsticks   = philosophers.size.times.map { Chopstick.new }
-  end
-
-  def left_chopstick_at(position)
-    index = position % chopsticks.size
-    chopsticks[index]
-  end
-
-  def right_chopstick_at(position)
-    index = (position + 1) % chopsticks.size
-    chopsticks[index]
-  end
-end
-
+require_relative "../lib/chopstick"
+require_relative "../lib/table"
 
 class Philosopher
   attr_reader :name, :thought, :left_chopstick, :right_chopstick
@@ -43,11 +12,9 @@ class Philosopher
     @left_chopstick  = table.left_chopstick_at(position)
     @right_chopstick = table.right_chopstick_at(position)
 
-    Thread.new do
-      loop do
-        think
-        eat
-      end
+    loop do
+      think
+      eat
     end
   end
 
@@ -82,7 +49,7 @@ philosophers = names.map { |name| Philosopher.new(name) }
 table = Table.new(philosophers)
 
 threads = philosophers.map.with_index do |philosopher, i|
-  philosopher.dine(table, i) 
+  Thread.new { philosopher.dine(table, i) }
 end
 
 threads.each(&:join)
