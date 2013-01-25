@@ -56,18 +56,15 @@ end
 class Waiter
   include Celluloid
 
-  def initialize(philosophers)
-    @eating   = []
-    @capacity = philosophers.size - 1
+  def initialize
+    @eating = []
   end
 
   def request_to_eat(philosopher)
-    if @eating.size < @capacity
-      @eating << philosopher
-      philosopher.async.eat
-    else
-      Actor.current.async.request_to_eat(philosopher)
-    end
+    return if @eating.include?(philosopher)
+
+    @eating << philosopher
+    philosopher.async.eat
   end
 
   def done_eating(philosopher)
@@ -79,7 +76,7 @@ names = %w{Heraclitus Aristotle Epictetus Schopenhauer Popper}
 
 philosophers = names.map { |name| Philosopher.new(name) }
 
-waiter = Waiter.new(philosophers.size - 1)
+waiter = Waiter.new
 table = Table.new(philosophers.size)
 
 philosophers.each_with_index do |philosopher, i| 

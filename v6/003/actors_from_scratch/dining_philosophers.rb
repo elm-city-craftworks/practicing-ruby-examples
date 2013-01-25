@@ -52,18 +52,15 @@ end
 class Waiter
   include Actor
 
-  def initialize(capacity)
+  def initialize
     @eating = []
-    @capacity = capacity
   end
 
   def request_to_eat(philosopher)
-    if @eating.size < @capacity
-      @eating << philosopher
-      philosopher.async.eat
-    else
-      Actor.current.async.request_to_eat(philosopher)
-    end
+    return if @eating.include?(philosopher)
+
+    @eating << philosopher
+    philosopher.async.eat
   end
 
   def done_eating(philosopher)
@@ -75,9 +72,11 @@ names = %w{Heraclitus Aristotle Epictetus Schopenhauer Popper}
 
 philosophers = names.map { |name| Philosopher.new(name) }
 
-table  = Table.new(philosophers.size)
-waiter = Waiter.new(philosophers.size - 1)
+waiter = Waiter.new
+table = Table.new(philosophers.size)
 
-philosophers.each_with_index { |philosopher, i| philosopher.async.dine(table, i, waiter) }
+philosophers.each_with_index do |philosopher, i| 
+  philosopher.async.dine(table, i, waiter) 
+end
 
 sleep
