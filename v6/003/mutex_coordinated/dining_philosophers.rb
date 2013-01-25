@@ -2,8 +2,6 @@ require_relative "../lib/chopstick"
 require_relative "../lib/table"
 
 class Philosopher
-  attr_reader :name, :left_chopstick, :right_chopstick
-
   def initialize(name)
     @name   = name
   end
@@ -19,34 +17,35 @@ class Philosopher
   end
 
   def think
-    puts "#{name} is thinking."
+    puts "#{@name} is thinking."
   end
 
   def take_chopsticks
-    left_chopstick.take
-    right_chopstick.take
+    @left_chopstick.take
+    @right_chopstick.take
   end
 
   def drop_chopsticks
-    left_chopstick.drop
-    right_chopstick.drop
+    @left_chopstick.drop
+    @right_chopstick.drop
   end
 
   def eat
-    puts "#{name} is eating."
+    puts "#{@name} is eating."
 
     drop_chopsticks
   end
 end
 
 class Waiter
-  def initialize
-    @mutex = Mutex.new
+  def initialize(capacity)
+    @capacity = capacity
+    @mutex    = Mutex.new
   end
 
   def serve(table, philosopher)
     @mutex.synchronize do
-      sleep(rand) while table.chopsticks_in_use >= table.max_chopsticks
+      sleep(rand) while table.chopsticks_in_use >= @capacity 
       philosopher.take_chopsticks
     end
 
@@ -58,9 +57,9 @@ end
 names = %w{Heraclitus Aristotle Epictetus Schopenhauer Popper}
 
 philosophers = names.map { |name| Philosopher.new(name) }
-waiter       = Waiter.new
 
-table = Table.new(philosophers)
+table  = Table.new(philosophers.size)
+waiter = Waiter.new(philosophers.size - 1)
 
 threads = philosophers.map.with_index do |philosopher, i|
   Thread.new { philosopher.dine(table, i, waiter) }

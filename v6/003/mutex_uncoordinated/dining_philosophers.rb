@@ -2,8 +2,6 @@ require_relative "../lib/chopstick"
 require_relative "../lib/table"
 
 class Philosopher
-  attr_reader :name, :thought, :left_chopstick, :right_chopstick
-
   def initialize(name)
     @name = name
   end
@@ -19,25 +17,25 @@ class Philosopher
   end
 
   def think
-    puts "#{name} is thinking"
+    puts "#{@name} is thinking"
   end
 
   def eat
     take_chopsticks
 
-    puts "#{name} is eating."
+    puts "#{@name} is eating."
 
     drop_chopsticks
   end
 
   def take_chopsticks
-    left_chopstick.take
-    right_chopstick.take
+    @left_chopstick.take
+    @right_chopstick.take
   end
 
   def drop_chopsticks
-    left_chopstick.drop
-    right_chopstick.drop
+    @left_chopstick.drop
+    @right_chopstick.drop
   end
 end
 
@@ -45,8 +43,7 @@ end
 names = %w{Heraclitus Aristotle Epictetus Schopenhauer Popper}
 
 philosophers = names.map { |name| Philosopher.new(name) }
-
-table = Table.new(philosophers)
+table        = Table.new(philosophers.size)
 
 threads = philosophers.map.with_index do |philosopher, i|
   Thread.new { philosopher.dine(table, i) }

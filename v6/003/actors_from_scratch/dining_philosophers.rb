@@ -5,8 +5,6 @@ require_relative "../lib/table"
 class Philosopher
   include Actor
 
-  attr_reader :name, :thought, :left_chopstick, :right_chopstick
-
   def initialize(name)
     @name = name
   end
@@ -21,47 +19,50 @@ class Philosopher
   end
 
   def think
-    puts "#{name} is thinking."
+    puts "#{@name} is thinking."
     sleep(rand)
+
     @waiter.async.request_to_eat(Actor.current)
   end
 
   def eat
     take_chopsticks
-    puts "#{name} is eating."
+
+    puts "#{@name} is eating."
     sleep(rand)
+
     drop_chopsticks
+
     @waiter.async.done_eating(Actor.current)
 
     think
   end
 
   def take_chopsticks
-    left_chopstick.take
-    right_chopstick.take
+    @left_chopstick.take
+    @right_chopstick.take
   end
 
   def drop_chopsticks
-    left_chopstick.drop
-    right_chopstick.drop
+    @left_chopstick.drop
+    @right_chopstick.drop
   end
 end
 
 class Waiter
   include Actor
 
-  def initialize(philosophers)
+  def initialize(capacity)
     @eating = []
-    @max_eating = philosophers.size - 1
+    @capacity = capacity
   end
 
   def request_to_eat(philosopher)
-    if @eating.size < @max_eating
+    if @eating.size < @capacity
       @eating << philosopher
       philosopher.async.eat
     else
       Actor.current.async.request_to_eat(philosopher)
-      Thread.pass
     end
   end
 
@@ -74,9 +75,8 @@ names = %w{Heraclitus Aristotle Epictetus Schopenhauer Popper}
 
 philosophers = names.map { |name| Philosopher.new(name) }
 
-waiter = Waiter.new(philosophers)
-
-table = Table.new(philosophers)
+table  = Table.new(philosophers.size)
+waiter = Waiter.new(philosophers.size - 1)
 
 philosophers.each_with_index { |philosopher, i| philosopher.async.dine(table, i, waiter) }
 

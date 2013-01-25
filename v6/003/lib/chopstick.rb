@@ -18,4 +18,3 @@ class Chopstick
     @mutex.locked?
   end
 end
-
