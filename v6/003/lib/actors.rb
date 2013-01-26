@@ -33,12 +33,12 @@ module Actor
       end
     end
 
-    def async(meth = nil, *args)
-      if meth
-        @mailbox << [meth, args]
-      else
-        @async_proxy
-      end
+    def async
+      @async_proxy
+    end
+      
+    def send_later(meth, *args)
+      @mailbox << [meth, args]
     end
 
     def terminate
@@ -74,7 +74,7 @@ module Actor
     end
 
     def method_missing(meth, *args)
-      @actor.async(meth, *args)
+      @actor.send_later(meth, *args)
     end
   end
 end
