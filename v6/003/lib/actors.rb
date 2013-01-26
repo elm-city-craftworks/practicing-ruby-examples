@@ -29,7 +29,7 @@ module Actor
 
       @thread = Thread.new do
         Thread.current[:actor] = self
-        process_messages 
+        process_inbox
       end
     end
 
@@ -51,14 +51,14 @@ module Actor
 
     private
 
-    def process_messages
+    def process_inbox
       while @running
         meth, args = @mailbox.pop
         process_message(meth, *args)
       end
 
-      rescue Exception => ex
-        puts "Error while running actor: #{ex}"
+    rescue Exception => ex
+      puts "Error while running actor: #{ex}"
     end
 
     def process_message(meth, *args)
