@@ -9,7 +9,7 @@ class Table
   end
 
   def right_chopstick_at(position)
-    index = (position + 1) % @chopsticks.size
+    index = position % @chopsticks.size
     @chopsticks[index]
   end
 
