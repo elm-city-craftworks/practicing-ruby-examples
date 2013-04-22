@@ -1,3 +1,5 @@
+require "pry"
+
 require_relative '../lib/actors'
 require_relative "../lib/chopstick"
 require_relative "../lib/table"
@@ -57,9 +59,11 @@ class Waiter
   end
 
   def request_to_eat(philosopher)
+    binding.pry
     return if @eating.include?(philosopher)
 
     @eating << philosopher
+
     philosopher.async.eat
   end
 

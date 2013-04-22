@@ -96,7 +96,7 @@ Ray.game "Hello world!", :size => [1000,1000] do
 
     render do |win|
       boids.each { |b| win.draw(b.shape) }
-      obstacles.each { |b| win.draw(b) }
+#      obstacles.each { |b| win.draw(b) }
     end
   end
 
