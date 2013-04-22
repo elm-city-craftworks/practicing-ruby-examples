@@ -1,12 +1,11 @@
 require 'mail'
 
-# Set up delivery defaults to use Gmail
 Mail.defaults do
   delivery_method :smtp, { 
     :address => 'smtp.gmail.com',
     :port => '587',
-    :user_name => ENV['GMAIL_USER'],
-    :password => ENV['GMAIL_PASSWORD'],
+    :user_name => ENV["GMAIL_USER"],
+    :password =>  ENV["GMAIL_PASSWORD"],
     :authentication => :plain,
     :enable_starttls_auto => true
   }
@@ -14,11 +13,11 @@ end
 
 module Spyglass
   module Messenger
-    Gmail = ->(message: raise, recipient: raise, subject: raise) do
+    DeliverGmail = ->(message: raise, subject: raise) do
       mail = Mail.new
 
-      mail.from = Mail.delivery_method.settings[:user_name]
-      mail.to   = recipient
+      mail.from = ENV["GMAIL_USER"]
+      mail.to   = ENV["SPYGLASS_RECIPIENT"]
 
       mail.subject = subject
       mail.body    = message 

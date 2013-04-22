@@ -1,6 +1,6 @@
 require_relative "../lib/spyglass/link_fetcher/reddit"
 require_relative "../lib/spyglass/data/history"
-require_relative "../lib/spyglass/formatter/erb"
+require_relative "../lib/spyglass/formatter/plain_text"
 require_relative "../lib/spyglass/messenger/gmail"
 
 basedir = File.dirname(__FILE__)
@@ -14,9 +14,8 @@ end
 
 history.update(selected_links)
 
-message = Spyglass::Formatter::ERB.(links: selected_links, 
-                                    template: "#{basedir}/message.erb")
+message = Spyglass::Formatter::PlainText.
+            (links: selected_links, template: "#{basedir}/message.erb")
 
-Spyglass::Messenger::Gmail.(subject: "Links for you!!!!!!",
-                            message: message,
-                            recipient: ENV['SPYGLASS_RECIPIENT'])
+Spyglass::Messenger::DeliverGmail.
+  (subject: "Links for you!!!!!!", message: message)
