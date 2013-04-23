@@ -7,8 +7,8 @@ module Spyglass
         @store = PStore.new(filename)
       end
 
-      def new?(url)
-        @store.transaction { @store[url].nil? }
+      def new?(link)
+        @store.transaction { @store[link.url].nil? }
       end
 
       def update(links)
