@@ -72,15 +72,15 @@ loop do
   # Make sure the file exists and is not a directory
   # before attempting to open it.
   if File.exist?(path) && !File.directory?(path)
-    File.open(path) do |file|
+    File.open(path, "rb") do |file|
       socket.print "HTTP/1.1 200 OK\r\n" +
                    "Content-Type: #{content_type(file)}\r\n" +
                    "Content-Length: #{file.size}\r\n"
 
       socket.print "\r\n"
 
-      # print the contents of the file to the socket, line by line.
-      file.each { |line| socket.print line }
+      # write the contents of the file to the socket
+      IO.copy_stream(file, socket)
     end
   else 
     message = "File not found\n"
