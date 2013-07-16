@@ -1,3 +1,6 @@
+##3. the drag effect, calculate the expotentially smoothed average of 20 data points 
+##and compare it to the global average
+
 file <- download.file("http://sleepy-shore-7394.herokuapp.com/mood-logs.csv", destfile="mood-logs.csv")
 
 data <- read.table("mood-logs.csv",header=FALSE,sep=",")

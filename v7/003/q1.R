@@ -1,3 +1,7 @@
+##1. individual days, relationship between mood and time of the day patterns.
+##days break into 3 hours 8am to 11pm, 15 hours. 
+#38-11, 11-2, 2-5, 5-8, 8-11. 
+
 file <- download.file("http://sleepy-shore-7394.herokuapp.com/mood-logs.csv", destfile="mood-logs.csv")
 
 data <- read.table("mood-logs.csv",header=FALSE,sep=",")
