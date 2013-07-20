@@ -24,12 +24,13 @@ data <- read.table("mood-logs.csv",header=FALSE,sep=",")
 
 work_rest_code <- read.table("work_rest.txt",header=FALSE,sep="\t")
 
-data$V5 = apply(data, 1, function(row) work_rest_code$V2[row[3]] )
+data$V6 = apply(data, 1, function(row) work_rest_code[row[3],  2] )
+
 
 data <- data[data$V4 %in% c(8:22) ,]
 
-work <- data[data$V5 %in% c('work') ,]
-rest <- data[data$V5 %in% c('rest') ,]
+work <- data[data$V6 %in% c('work') ,]
+rest <- data[data$V6 %in% c('rest') ,]
 
 summary_plot(work, 'blue','gray')
 summary_plot(rest, 'red','gray')
