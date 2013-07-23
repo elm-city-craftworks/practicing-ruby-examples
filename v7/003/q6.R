@@ -23,3 +23,30 @@ data_day_sd <- aggregate(data$rating, by=list(data$weekdaynum),FUN=sd)
 plot(data_day_mean$Group.1,data_day_mean$x,xlim=c(0,6), ylim=c(0,10),type="o",xaxt="n",xlab="Day of the Week",ylab="Mood Rating")
 axis(side=1,at=c(0:6),label=week)
 errorbars(c(0:6),data_day_mean$x,data_day_sd$x,0.05,'red')
+
+
+#status, compare the mean of each day. same as q1
+#1. grab the data in list
+data_day=list()
+for(i in c(1:7)){
+  data_day[[i]] <- data[data$weekdaynum %in% c(i-1) ,2]
+}
+#2. compare variance
+var.test(data_day[[1]],data_day[[2]],alternatiive=c("two.sided"))
+var.test(data_day[[1]],data_day[[3]],alternatiive=c("two.sided"))
+var.test(data_day[[1]],data_day[[4]],alternatiive=c("two.sided"))
+#significant, unequal variance
+
+#3. oneway anova
+oneway.test(rating ~ weekdaynum, data=data,var.equal=F)
+#significant
+
+#4. t tests
+t.test(data_day[[1]],data_day[[2]])
+t.test(data_day[[1]],data_day[[3]])
+t.test(data_day[[1]],data_day[[4]])
+t.test(data_day[[1]],data_day[[5]])
+t.test(data_day[[1]],data_day[[6]])
+t.test(data_day[[1]],data_day[[7]])
+#1 vs 4 and 1 vs 7 different, sunday is different from wed and sat
+#then test tuesday. ......
