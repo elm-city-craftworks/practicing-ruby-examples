@@ -4,7 +4,7 @@
 
 drawGraph <- function(data, range) {
   data <- data[data$hour %in% range ,]
-  title <- paste("Mood Rating Density During",as.character(min(range)),"to",as.character(max(range)))
+  title <- paste("Mood Rating Density During hour",as.character(min(range)),"to",as.character(max(range)))
   graph <- hist(data$rating,freq=F,ylim=c(0,0.5),xaxt='n',xlim=c(0,10),
                 breaks=c(0:9),xlab="Mood Rating",ylab="Density",
                 main=title)
