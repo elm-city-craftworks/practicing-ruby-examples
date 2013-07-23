@@ -42,11 +42,11 @@ oneway.test(rating ~ weekdaynum, data=data,var.equal=F)
 #significant
 
 #4. t tests
-t.test(data_day[[1]],data_day[[2]])
-t.test(data_day[[1]],data_day[[3]])
-t.test(data_day[[1]],data_day[[4]])
-t.test(data_day[[1]],data_day[[5]])
-t.test(data_day[[1]],data_day[[6]])
-t.test(data_day[[1]],data_day[[7]])
-#1 vs 4 and 1 vs 7 different, sunday is different from wed and sat
-#then test tuesday. ......
+pairwise.t.test(data$rating, data$weekdaynum,p.adj = "fdr" )
+#result, Wed different from Sun, Mon, Tue, Fri
+#result, Sat different from Sun, Mon, Tue, Fri
+#result, Thur different from Mon
+
+
+#print mean
+tapply(data$rating,data$weekdaynum,FUN=mean)
