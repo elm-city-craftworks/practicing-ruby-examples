@@ -6,10 +6,12 @@ source("helpers.R")
 
 drawGraph <- function(data, range) {
   data <- data[data$hour %in% range ,]
-  title <- paste("Mood Rating Density During hour",as.character(min(range)),"to",as.character(max(range)))
+  title <- paste("Mood rating density from ",
+                 as.character(min(range)),
+                 ":00 to ",as.character(max(range) + 1), ":00", sep="")
   graph <- hist(data$rating,freq=F,ylim=c(0,0.5),xaxt='n',xlim=c(0,10),
                 breaks=c(0:9),xlab="Mood Rating",ylab="Density",
-                main=paste("Summarized mood rating frequency for hours", paste(range, collapse=", ")))
+                main=title)
   axis(side=1, at=graph$mids, labels=c(1:9), lwd=0.5)
 }
 

@@ -29,3 +29,5 @@ task "generate-report" => "generate-plots" do
 
   Rake::Task["clean"].invoke
 end
+
+task :default => "generate-report"
