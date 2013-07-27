@@ -1,0 +1,31 @@
+# http://www.stuartellis.eu/articles/rake/#rake-filehandling
+
+require "open-uri"
+require "fileutils"
+
+require "rake/clean"
+require "prawn"
+
+CLEAN.include("images/*", "data/mood-logs.csv")
+
+task "download-logs" do
+  data = open("http://sleepy-shore-7394.herokuapp.com/mood-logs.csv")
+
+  File.open("data/mood-logs.csv", "w") do |file|
+    IO.copy_stream(data, file)
+  end
+end
+
+task "generate-plots" => "download-logs" do
+  %w[q1.R q2.R q3.R q6.R summary.R].each { |script| sh %{Rscript #{script}} }
+end
+
+task "generate-report" => "generate-plots" do
+  Prawn::Document.generate("report.pdf") do
+    Dir.glob("images/*").each do |file|
+      image file, :scale => 0.5, :position => :center
+    end
+  end
+
+  Rake::Task["clean"].invoke
+end
