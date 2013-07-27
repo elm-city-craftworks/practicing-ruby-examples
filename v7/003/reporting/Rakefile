@@ -9,7 +9,7 @@ require "prawn"
 CLEAN.include("images/*", "data/mood-logs.csv")
 
 task "download-logs" do
-  data = open("http://sleepy-shore-7394.herokuapp.com/mood-logs.csv")
+  data = open(ENV["MOOD_LOG_URL"])
 
   File.open("data/mood-logs.csv", "w") do |file|
     IO.copy_stream(data, file)
