@@ -17,13 +17,20 @@ task "download-logs" do
 end
 
 task "generate-plots" => "download-logs" do
-  %w[q1.R q2.R q3.R q6.R summary.R].each { |script| sh %{Rscript #{script}} }
+  %w[frequency.R work-rest.R day-of-week.R 
+     weighted-summary.R daily-average.R].each { |script| sh %{Rscript #{script}} }
 end
 
 task "generate-report" => "generate-plots" do
+  rm_f "report.pdf"
+
+  plots = %w[daily-average weighted-average-summary
+             work-average rest-average day-of-week-summary
+             frequency1 frequency2 frequency3 frequency4 frequency5]
+
   Prawn::Document.generate("report.pdf") do
-    Dir.glob("images/*").each do |file|
-      image file, :scale => 0.5, :position => :center
+    plots.each do |plot| 
+      image "images/#{plot}.jpg", :position => :center, :scale => 0.5 
     end
   end
 
