@@ -19,7 +19,7 @@ summary_plot <- function(data,col_mean,col_sd,label,filename){
 
     axis(side=2, at=c(1:9), cex.axis=1.5)
 
-  	errorbars(data_mean$Group.1,data_mean$x,data_sd$x,0.05,col=col_sd) 
+    errorbars(data_mean$Group.1,data_mean$x,data_sd$x,0.05,col=col_sd) 
   })
 }
 
