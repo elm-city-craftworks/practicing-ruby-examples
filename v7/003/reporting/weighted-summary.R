@@ -4,28 +4,29 @@
 library("TTR")
 source("helpers.R")
 
-timestamp_to_day <- function(ts_start, ts_current) {
-  1 + ((ts_current - ts_start) / 86000)
-}
+data <- read_data()
+starting_timestamp <- data$sec[1]
 
-data <- read.table("data/mood-logs.csv",header=FALSE,sep=",")
-starting_timestamp <- data[1, 1]
-
-data$V1 <- apply(data, 1, function(row) 
+data$exactday <- apply(data, 1, function(row) 
   timestamp_to_day(starting_timestamp, as.numeric(row[1])))
 
-data_mean_EMA <- EMA(data$V2,n=20)
-data_mean <- mean(data$V2)
-data_sd <- sd(data$V2)
-
+data_mean_EMA <- EMA(data$rating,n=20)
+data_mean     <- mean(data$rating)
+data_sd       <- sd(data$rating)
 
 draw_jpg("weighted-average-summary", function() {
-  # TODO: Put some tick marks indicating the days on the x-axis
-  graph <- plot(data$V1,data_mean_EMA,type="l",col="darkcyan",ylim=c(1,9),
-      main="Weighted average of mood ratings over time", ylab="Mood rating",
-       xlab="Number of days since start of study", xaxt="n", yaxt="n",
-       xlim=c(0,round_up(max(data$V3))), cex.lab=1.5, cex.main=2,
-       lwd=3)
+  graph <- plot(data$exactday,data_mean_EMA,
+                type = "l",
+                col  = "darkcyan",
+                ylim = c(1,9),
+                xaxt = "n",
+                yaxt = "n",
+                xlim = c(0,round_up(max(data$day))),
+                lwd  = 3,
+                main = "Weighted average of mood ratings over time", 
+                ylab = "Mood rating",
+                xlab = "Number of days since start of study",
+                cex.lab=1.5, cex.main=2)
 
   axis(side=1, cex.axis=1.5)
   axis(side=2, at=c(1:9), cex.axis=1.5)
