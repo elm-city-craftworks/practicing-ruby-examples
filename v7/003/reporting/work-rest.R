@@ -3,10 +3,10 @@
 source("helpers.R")
 
 summary_plot <- function(data,col_mean,col_sd,label,filename){
-	data_mean <- aggregate(data$rating,by=list(data$hour),FUN=mean)
-	data_sd   <- aggregate(data$rating,by=list(data$hour),FUN=sd)
-	data_max  <- aggregate(data$rating,by=list(data$hour),FUN=max)
-	data_min  <- aggregate(data$rating,by=list(data$hour),FUN=min)
+  data_mean <- aggregate(data$rating,by=list(data$hour),FUN=mean)
+  data_sd   <- aggregate(data$rating,by=list(data$hour),FUN=sd)
+  data_max  <- aggregate(data$rating,by=list(data$hour),FUN=max)
+  data_min  <- aggregate(data$rating,by=list(data$hour),FUN=min)
 
   draw_jpg(filename, function() {
 	  plot(data_mean$Group.1, data_mean$x,
