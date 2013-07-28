@@ -23,9 +23,11 @@ draw_jpg("weighted-average-summary", function() {
   # TODO: Put some tick marks indicating the days on the x-axis
   graph <- plot(data$V1,data_mean_EMA,type="l",col="red",ylim=c(1,9),
       main="Weighted average of mood ratings over time", ylab="Mood rating",
-       xlab="Number of days from study start date", xaxt="n")
+       xlab="Number of days from study start date", xaxt="n", yaxt="n",
+       xlim=c(0,round_up(max(data$V3))))
 
   axis(side=1)
+  axis(side=2, at=c(1:9))
 
   abline(h=data_mean,col="green")
   abline(h=data_mean+data_sd,col="gray")

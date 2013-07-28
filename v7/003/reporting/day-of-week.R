@@ -1,5 +1,3 @@
-#q6, day of the week effect
-
 source("helpers.R")
 
 errorbars <- function(X,Y,SE,w,col=1) {

@@ -8,3 +8,5 @@ draw_jpg <- function(file, callback) {
   callback()
   dev.off()
 }
+
+round_up <- function(x) ceiling(max(x)/10)*10
