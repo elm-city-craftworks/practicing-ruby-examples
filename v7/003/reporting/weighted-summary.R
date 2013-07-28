@@ -21,15 +21,16 @@ data_sd <- sd(data$V2)
 
 draw_jpg("weighted-average-summary", function() {
   # TODO: Put some tick marks indicating the days on the x-axis
-  graph <- plot(data$V1,data_mean_EMA,type="l",col="red",ylim=c(1,9),
+  graph <- plot(data$V1,data_mean_EMA,type="l",col="darkcyan",ylim=c(1,9),
       main="Weighted average of mood ratings over time", ylab="Mood rating",
-       xlab="Number of days from study start date", xaxt="n", yaxt="n",
-       xlim=c(0,round_up(max(data$V3))))
+       xlab="Number of days since start of study", xaxt="n", yaxt="n",
+       xlim=c(0,round_up(max(data$V3))), cex.lab=1.5, cex.main=2,
+       lwd=3)
 
-  axis(side=1)
-  axis(side=2, at=c(1:9))
+  axis(side=1, cex.axis=1.5)
+  axis(side=2, at=c(1:9), cex.axis=1.5)
 
-  abline(h=data_mean,col="green")
-  abline(h=data_mean+data_sd,col="gray")
-  abline(h=data_mean-data_sd,col="gray")
+  abline(h=data_mean,col="darkgreen")
+  abline(h=data_mean+data_sd,col="cornsilk4")
+  abline(h=data_mean-data_sd,col="cornsilk4")
 })
