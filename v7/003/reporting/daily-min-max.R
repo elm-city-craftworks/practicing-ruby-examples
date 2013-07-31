@@ -3,11 +3,12 @@
 source("helpers.R")
 
 data <- read_data()
-data_max <- aggregate(data$rating,by=list(data$day),FUN=max)
-data_min <- aggregate(data$rating,by=list(data$day),FUN=min)
+
+data_max <- aggregate(rating ~ day, data, max)
+data_min <- aggregate(rating ~ day, data, min)
 
 draw_jpg("daily-min-max", function() {
-  plot(data_min$Group.1, data_min$x, 
+  plot(data_min$day, data_min$rating, 
        type = "l",
        col  = "coral1",
        xlim = c(0,round_up(max(data$day))), 
@@ -21,5 +22,5 @@ draw_jpg("daily-min-max", function() {
   axis(side=1, cex.axis=1.5)
   axis(side=2, at=c(1:9), cex.axis=1.5)
 
-  lines(data_max$Group.1, data_max$x, type="l", lwd=2, col="darkgreen")
+  lines(data_max$day, data_max$rating, type="l", lwd=2, col="darkgreen")
 })
