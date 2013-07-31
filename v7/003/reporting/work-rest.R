@@ -11,12 +11,14 @@ summary_plot <- function(data,col_mean,col_sd,label,filename){
           type = "o",
           ylim = c(1,9),
           col  = col_mean,
+          xaxt = "n",
           yaxt = "n",
           main = label, 
           ylab = "Mood rating", 
           xlab = "Time of day",
           cex.main=2, cex.lab=1.5, lwd=2)
 
+    axis(side=1, at=c(8:22), cex.axis=1.5)
     axis(side=2, at=c(1:9), cex.axis=1.5)
 
     errorbars(data_mean$Group.1,data_mean$x,data_sd$x,0.05,col=col_sd) 

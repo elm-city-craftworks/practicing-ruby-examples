@@ -10,12 +10,12 @@ starting_timestamp <- data$sec[1]
 data$exactday <- apply(data, 1, function(row) 
   timestamp_to_day(starting_timestamp, as.numeric(row[1])))
 
-data_mean_EMA <- EMA(data$rating,n=20)
-data_mean     <- mean(data$rating)
-data_sd       <- sd(data$rating)
+data_mean_MA <- EMA(data$rating)
+data_mean    <- mean(data$rating)
+data_sd      <- sd(data$rating)
 
-draw_jpg("weighted-average-summary", function() {
-  graph <- plot(data$exactday,data_mean_EMA,
+draw_jpg("moving-summary", function() {
+  graph <- plot(data$exactday,data_mean_MA,
                 type = "l",
                 col  = "darkcyan",
                 ylim = c(1,9),

@@ -18,7 +18,7 @@ end
 
 task "generate-plots" => "download-logs" do
   %w[frequency.R work-rest.R day-of-week.R 
-     weighted-summary.R daily-min-max.R].each { |script| sh %{Rscript #{script}} }
+     moving-summary.R daily-min-max.R].each { |script| sh %{Rscript #{script}} }
 end
 
 task "generate-report" => "generate-plots" do
@@ -33,7 +33,7 @@ task "generate-report" => "generate-plots" do
                                        {:scale => 0.42}.merge(params) }
 
 
-    float { draw_image.("weighted-average-summary", :position => :left) }
+    float { draw_image.("moving-summary", :position => :left) }
     draw_image.("daily-min-max", :position => :right)
 
     move_down 20
