@@ -41,3 +41,5 @@ rest <- data[data$category %in% c('rest') ,]
 summary_plot(work, 'blue',rgb(0.5,0.5,0.5), "Average mood by time of day for work days","work-average")
 summary_plot(rest, 'red',rgb(0.5,0.5,0.5), "Average mood by time of day for rest days",
              "rest-average")
+tapply(work$rating,work$hour,FUN=var)
+barplot(v)
