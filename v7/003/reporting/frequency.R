@@ -31,9 +31,21 @@ time_period <- list(c(8:10),c(11:13),c(14:16),c(17:19),c(20:22))
 data_time   <- list()
 
 for(i in c(1:length(time_period))){
-  data_time[[i]] <- data[data$hour %in% time_period[[i]],2]
+  data_time[[i]] <- data[data$hour %in% time_period[[i]],]
 
   data[data$hour %in% time_period[[i]], 7] = i
 
   draw_jpg(paste("frequency", i, sep=''), function() drawGraph(data, time_period[[i]]))
 }
+
+#calculate number and density of low ratings
+num_low_rating<-array()
+des_low_rating<-array()
+for(i in c(1:length(time_period))){
+  num_low_rating[i]<-length(data_time[[i]][data_time[[i]]$rating<=5,2])
+  des_low_rating[i]<-num_low_rating[i]/dim(data_time[[i]])[1]
+}
+
+lm.out <- lm(formula = des_low_rating[1:4]~c(1:4))
+summary(lm.out)
+#p = 0.02, significant! If use num_low_rating, even more significant
