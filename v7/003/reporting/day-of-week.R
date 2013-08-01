@@ -24,3 +24,25 @@ draw_jpg("day-of-week-summary", function() {
 
   errorbars(c(0:6), data_day_mean$x, data_day_sd$x, 0.05, 'darkcyan')
 })
+
+#print variance
+tapply(data$rating,data$weekdaynum,FUN=var)
+#compare variance
+var.test(data[data$weekdaynum %in% 0,2],data[data$weekdaynum %in% 1,2],alternatiive=c("two.sided"))
+var.test(data[data$weekdaynum %in% 0,2],data[data$weekdaynum %in% 2,2],alternatiive=c("two.sided"))
+var.test(data[data$weekdaynum %in% 0,2],data[data$weekdaynum %in% 3,2],alternatiive=c("two.sided"))
+
+#ANOVA to compare the means
+oneway.test(rating ~ weekdaynum, data=data,var.equal=F)
+
+#result: p = 0.0034, significantly different.
+#It means there is at least two groups that have different means.
+
+#3. posthoc t tests between each pair, used FDR adjustment
+pairwise.t.test(data$rating, data$weekdaynum,p.adj = "fdr" )
+#result: Mon-Wed, Mon-Sat,Tue-Sat,Wed-Fri,Fri-Sat are different
+#Saturday different from Mon, Tue and Fri
+#Wed different from Mon and Fri
+
+#4. print out the mean for each group to confirm
+tapply(data$rating,data$weekdaynum,FUN=mean)
