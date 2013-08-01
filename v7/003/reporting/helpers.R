@@ -21,6 +21,13 @@ read_data <- function() {
   data
 }
 
+filter_data <-function(data){
+  data_mean <- mean(data$rating)
+  data_sd<-sd(data$rating)
+  data<-data[!data$rating < data_mean-2*data_sd,]
+  data<-data[!data$rating > data_mean+2*data_sd,]
+}
+
 round_up <- function(x) ceiling(max(x)/10)*10
 
 timestamp_to_day <- function(ts_start, ts_current) {
