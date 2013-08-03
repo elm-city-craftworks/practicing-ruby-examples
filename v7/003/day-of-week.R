@@ -30,8 +30,7 @@ draw_jpg("day-of-week-summary", function() {
 #ANOVA to compare the means
 oneway.test(rating ~ weekdaynum, data=data,var.equal=F)
 
-#3. posthoc t tests between each pair, used FDR adjustment
+# posthoc t tests between each pair, used FDR adjustment
 pairwise.t.test(data$rating, data$weekdaynum,p.adj = "fdr" )
-
-#4. print out the mean for each group to confirm
+#print out the mean for each group to confirm
 tapply(data$rating,data$weekdaynum,FUN=mean)
