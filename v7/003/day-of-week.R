@@ -24,3 +24,14 @@ draw_jpg("day-of-week-summary", function() {
 
   errorbars(c(0:6), data_day_mean$x, data_day_sd$x, 0.05, 'darkcyan')
 })
+
+# --- statistical testing (prints to console only ---
+
+#ANOVA to compare the means
+oneway.test(rating ~ weekdaynum, data=data,var.equal=F)
+
+#3. posthoc t tests between each pair, used FDR adjustment
+pairwise.t.test(data$rating, data$weekdaynum,p.adj = "fdr" )
+
+#4. print out the mean for each group to confirm
+tapply(data$rating,data$weekdaynum,FUN=mean)
