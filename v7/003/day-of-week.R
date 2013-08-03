@@ -25,7 +25,7 @@ draw_jpg("day-of-week-summary", function() {
   errorbars(c(0:6), data_day_mean$x, data_day_sd$x, 0.05, 'darkcyan')
 })
 
-# --- statistical testing (prints to console only ---
+# --- statistical testing (prints to console only) ---
 
 #ANOVA to compare the means
 oneway.test(rating ~ weekdaynum, data=data,var.equal=F)
