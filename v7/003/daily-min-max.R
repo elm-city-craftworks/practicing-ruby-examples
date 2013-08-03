@@ -1,4 +1,3 @@
-# from bmscblog.wordpress.com/2013/01/23/error-bars-with-r 
 
 source("helpers.R")
 
