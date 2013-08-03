@@ -21,6 +21,9 @@ drawGraph <- function(data, range) {
                 main   = title, 
                 col    = "lightblue",
                 cex.lab=2.5, cex.main=4, cex.sub=2.5, cex.axis=2.5)
+  
+  print(paste("Mood density for ratings between 1-5 from", title))
+  print(sum(graph$density[1:5]))
 
   axis(side=1, at=graph$mids, labels=c(1:9), lwd=0.5, cex.axis=2.5)
 }
@@ -29,6 +32,7 @@ data <- read_data()
 
 time_period <- list(c(8:10),c(11:13),c(14:16),c(17:19),c(20:22))
 data_time   <- list()
+
 
 for(i in c(1:length(time_period))){
   data_time[[i]] <- data[data$hour %in% time_period[[i]],2]
