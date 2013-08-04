@@ -12,7 +12,7 @@ drawGraph <- function(data, range) {
 
   graph <- hist(data$rating,
                 freq   = F,
-                ylim   = c(0,0.5),
+                ylim   = c(0,1),
                 xaxt   = 'n',
                 xlim   = c(0,10),
                 breaks = c(0:9),
