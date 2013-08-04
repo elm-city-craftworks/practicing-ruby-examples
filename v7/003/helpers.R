@@ -22,7 +22,7 @@ read_data <- function() {
   data
 }
 
-round_up <- function(x) ceiling(max(x)/10)*10
+round_up <- function(x) { ceiling(max(x)/10)*10 }
 
 timestamp_to_day <- function(ts_start, ts_current) {
   1 + ((ts_current - ts_start) / 86000)
