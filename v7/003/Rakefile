@@ -17,7 +17,7 @@ task "download-logs" do
 end
 
 task "generate-plots" => "download-logs" do
-  %w[frequency.R work-rest.R day-of-week.R 
+  %w[frequency.R day-of-week.R 
      moving-summary.R daily-min-max.R].each { |script| sh %{Rscript #{script}} }
 end
 
@@ -32,32 +32,22 @@ task "generate-report" => "generate-plots" do
     draw_image = ->(file, params={}) { image "images/#{file}.jpg", 
                                        {:scale => 0.42}.merge(params) }
 
-
-    float { draw_image.("moving-summary", :position => :left) }
-    draw_image.("daily-min-max", :position => :right)
-
-    move_down 20
-
-    draw_image.("day-of-week-summary", :position => :center)
+    float { draw_image.("moving-summary", :position => :left, :vposition => :center) }
+    draw_image.("daily-min-max", :position => :right, :vposition => :center)
 
     start_new_page
 
-    move_down 20
+    move_down 80
 
+    draw_image.("day-of-week-summary", :position => :center)
 
-    text "Mood rating frequency by time", :align => :center
-    move_down 30
+    move_down 40
 
     (1..5).each do |i|
       float do
         image "images/frequency#{i}.jpg", :position => (i-1)*(bounds.width / 5), :scale => 0.20
       end
     end
-
-    move_down 200
-
-    float { draw_image.("work-average", :position => :left) }
-    draw_image.("rest-average", :position => :right)
   end
 
   Rake::Task["clean"].invoke
