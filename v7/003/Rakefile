@@ -24,10 +24,6 @@ end
 task "generate-report" => "generate-plots" do
   rm_f "report.pdf"
 
-  Prawn.debug = true
-
-
-
   Prawn::Document.generate("report.pdf", :page_layout => :landscape) do
     draw_image = ->(file, params={}) { image "images/#{file}.jpg", 
                                        {:scale => 0.42}.merge(params) }
