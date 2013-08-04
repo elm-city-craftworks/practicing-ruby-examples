@@ -28,12 +28,8 @@ drawGraph <- function(data, range) {
 data <- read_data()
 
 time_period <- list(c(8:10),c(11:13),c(14:16),c(17:19),c(20:22))
-data_time   <- list()
-
 
 for(i in c(1:length(time_period))){
-  data_time[[i]] <- data[data$hour %in% time_period[[i]],2]
-
   data[data$hour %in% time_period[[i]], 7] = i
 
   draw_jpg(paste("frequency", i, sep=''), function() drawGraph(data, time_period[[i]]))
