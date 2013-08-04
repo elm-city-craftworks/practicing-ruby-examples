@@ -28,7 +28,7 @@ summary_plot <- function(data,col_mean,col_sd,label,filename){
 
 data <- read_data()
 
-work_rest_code <- read.table("data/work_rest.txt",header=FALSE,sep="\t")
+work_rest_code <- read.table("data/work_rest.csv",header=FALSE, sep=",")
 
 data$category <- apply(data, 1, function(row) work_rest_code[row[3],  2] )
 
