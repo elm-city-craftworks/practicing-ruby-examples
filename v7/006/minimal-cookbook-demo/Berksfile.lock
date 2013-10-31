@@ -1,0 +1,10 @@
+{
+  "sources": {
+    "demo": {
+      "path": "."
+    },
+    "ruby_build": {
+      "locked_version": "0.8.0"
+    }
+  }
+}
