@@ -1,10 +1,10 @@
 Demo Cookbook
 ========================
 
-This Chef cookbook is meant to be used as a simple demonstration for Practicing
-Ruby 7.6. It installs Ruby 2.0, updates RubyGems to the latest version, 
-and then installs the Bundler gem. It makes use of the [ruby_build]
-cookbook to do most of its heavy lifting.
+This Chef cookbook is a code sample from Issue 7.6 of Practicing Ruby. It installs 
+Ruby 2.0, updates RubyGems to the latest version, and then installs the 
+Bundler gem. It makes use of the [ruby_build][] cookbook to do 
+its heavy lifting.
 
 ## Requirements
 
