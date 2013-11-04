@@ -20,8 +20,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
  
     # Specify the recipe to run
     chef.json = { "run_list" =>  ["recipe[demo::default]"] }
-
-    # Set Chef log level
-    chef.log_level = ENV.fetch("CHEF_LOG", "info").downcase.to_sym
   end
 end
